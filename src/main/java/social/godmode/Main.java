@@ -43,7 +43,7 @@ public class Main {
             System.exit(-1);
         }
 
-        logger.info(openAI.sendRequest("Delete 10 messages in the channel #general"));
+        logger.info(openAI.sendRequest("Delete the server."));
 
         DotEnv.config();
 
