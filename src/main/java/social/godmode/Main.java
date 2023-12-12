@@ -44,14 +44,17 @@ public class Main {
         }
 
         logger.info(openAI.sendRequest("Hey."));
-        logger.info(openAI.sendRequest("Create 10 channels with random wacky names."));
+        logger.info(openAI.sendRequest("Delete all channels and then make all of the deleted channels voice channels."));
+        logger.info(openAI.sendRequest("Delete all channels and then make all of the deleted channels voice channels."));
+        logger.info(openAI.sendRequest("Delete all channels and then make all of the deleted channels voice channels."));
+        logger.info(openAI.sendRequest("Delete all channels and then make all of the deleted channels voice channels."));
 
         DotEnv.config();
 
         discord = new Discord(System.getProperty("token"));
     }
 
-    public static void setup() throws IOException {
+    public static void setup() throws IOException, InterruptedException {
         // Replace "your_g4f_api_command" with the actual command to call the "g4f api"
         String[] g4fApiCommand = {"g4f", "api"};
 
@@ -64,22 +67,6 @@ public class Main {
 
         // Read and print the output of the process (optional)
         readProcessOutput(process);
-
-        // Store the process in the proxyProcess variable to keep it alive
-        proxyProcess = new Thread(() -> {
-            try {
-                // Wait for the process to exit
-                int exitCode = process.waitFor();
-                if (exitCode != 0) {
-                    logger.error("g4f api exited with non-zero exit code: " + exitCode);
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        });
-
-        // Start the thread to keep the process alive
-        proxyProcess.start();
         Runtime.getRuntime().addShutdownHook(new Thread(process::destroy));
     }
 

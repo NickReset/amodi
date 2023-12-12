@@ -16,7 +16,6 @@ public class OpenAI {
     private final String endpoint = "http://localhost:1337/v1/";
     // load prompt.txt from resources
     private final String prompt = Files.readString(Path.of("src/main/resources/prompt.txt"));
-    // java.nio.file.InvalidPathException: Illegal char <:>
 
 
     public OpenAI() throws IOException {
@@ -25,7 +24,7 @@ public class OpenAI {
     public String sendRequest(String userInput) {
         try {
             JSONObject body = new JSONObject();
-            body.put("model", "gpt-3.5-turbo");
+            body.put("model", "gpt-4-32k-0613");
             JSONArray messages = new JSONArray();
             JSONObject systemMessage = new JSONObject();
             systemMessage.put("role", "system");
@@ -55,7 +54,13 @@ public class OpenAI {
             JSONObject response = new JSONObject(new String(connection.getInputStream().readAllBytes(), StandardCharsets.UTF_8));
             // choices.get(0).message.content
             JSONObject choices = response.getJSONArray("choices").getJSONObject(0);
-            return choices.getJSONObject("message").getString("content");
+            String content = choices.getJSONObject("message").getString("content");
+            if (content.startsWith("<!DOCTYPE html>")) {
+                System.out.println("Trying Again");
+                return sendRequest(userInput);
+            }
+            return content;
+//            return response.toString();
         } catch (Exception e) {
             Main.getLogger().error("Failed to send request to OpenAI proxy.");
             e.printStackTrace();

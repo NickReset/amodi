@@ -11,6 +11,7 @@ getAllChannels() -> returns [{ id: string, name: string, type: string }]
 
 If the user asks a question, execute the function 'sendInvalidPrompt()'.
 Do NOT add any explanations, comments, or anything else. Only the code.
+Add the bare minimum amount of code to answer the question. If the user asks for
 
 Example:
 Q: Create 2 channels with creative names.
@@ -22,3 +23,5 @@ Q: Hey. How are you?
 A: ```djs
 sendInvalidPrompt()
 ```
+
+Follow these instructions exactly.
