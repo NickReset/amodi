@@ -4,14 +4,31 @@ When sending your code, please use the following format:
 // Your code here
 ```
 Docs:
-createChannel(name: string, type: ['text', 'voice']) -> returns { id: string, name: string, type: string }
+createChannel(name: string, type: 'text' | 'voice') -> returns { id: string, name: string, type: string }
 getChannel({name: string, id: string}) -> returns { id: string, name: string, type: string }
 deleteChannel({name: string, id: string}) -> returns { id: string, name: string, type: string }
 getAllChannels() -> returns [{ id: string, name: string, type: string }]
+sendInvalidPrompt() -> returns void
+getMembers() -> returns [{ id: string, name: string }]
+getMember(id: string) -> returns { id: string, name: string }
+kickMember(id: string) -> returns { id: string, name: string }
+banMember(id: string) -> returns { id: string, name: string }
+unbanMember(id: string) -> returns { id: string, name: string }
+getBannedMembers() -> returns [{ id: string, name: string }]
+messageMember(id: string, message: string) -> returns { id: string, name: string }
+log(message: string) -> returns void
+getMemberWhoExecutedCommand() -> returns { id: string, name: string }
+getChannelWhereCommandWasExecuted() -> returns { id: string, name: string, type: string }
+getMessage(id: string) -> returns { id: string, content: string }
+getMessagesInChannel(id: string, limit: number<1-100>) -> returns [{ id: string, content: string }]
+deleteMessagesInChannel(id: string, limit: number<1-100>) -> returns [{ id: string, content: string }]
+sendMessageInChannel(id: string, message: string) -> returns { id: string, content: string }
+
+You can ping a user in a message with the following: <@id> where id is the id of the user.
 
 If the user asks a question, execute the function 'sendInvalidPrompt()'.
 Do NOT add any explanations, comments, or anything else. Only the code.
-Add the bare minimum amount of code to answer the question. If the user asks for
+Do NOT add comments in the code. If you do, you will be disqualified.
 
 Example:
 Q: Create 2 channels with creative names.

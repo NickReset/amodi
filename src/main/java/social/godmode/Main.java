@@ -43,11 +43,7 @@ public class Main {
             System.exit(-1);
         }
 
-        logger.info(openAI.sendRequest("Hey."));
-        logger.info(openAI.sendRequest("Delete all channels and then make all of the deleted channels voice channels."));
-        logger.info(openAI.sendRequest("Delete all channels and then make all of the deleted channels voice channels."));
-        logger.info(openAI.sendRequest("Delete all channels and then make all of the deleted channels voice channels."));
-        logger.info(openAI.sendRequest("Delete all channels and then make all of the deleted channels voice channels."));
+        logger.info(openAI.sendRequest("Delete 10 messages in the channel #general"));
 
         DotEnv.config();
 
