@@ -43,7 +43,7 @@ public class Main {
             System.exit(-1);
         }
 
-        logger.info(openAI.sendRequest("Delete the server."));
+        logger.info(openAI.sendRequest("Create 5 channels named in increasing order."));
 
         DotEnv.config();
 

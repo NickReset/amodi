@@ -3,6 +3,7 @@ package social.godmode;
 import lombok.Getter;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.entities.Activity;
 
 @Getter
 public class Discord {
@@ -17,6 +18,8 @@ public class Discord {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
+        this.jda.getPresence().setActivity(Activity.watching("granpas make their server since 2023"));
 
     }
 }
