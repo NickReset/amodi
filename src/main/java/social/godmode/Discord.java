@@ -19,7 +19,7 @@ public class Discord {
             e.printStackTrace();
         }
 
-        this.jda.getPresence().setActivity(Activity.watching("granpas make their server since 2023"));
+        this.jda.getPresence().setActivity(Activity.watching("you."));
 
     }
 }
