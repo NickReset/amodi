@@ -21,7 +21,7 @@ public class JavaScriptEngine {
         this.engine = new NashornScriptEngineFactory().getScriptEngine();
         
         put("client", new DiscordClientNashorn(jda, guild, sentChannel, sentMember));
-        eval(code.substring(code.indexOf("```djs") + 5, code.lastIndexOf("```")));
+        eval(code.substring(code.indexOf("```djs") + 6, code.lastIndexOf("```")));
     }
 
     public void eval(String evaluate) {

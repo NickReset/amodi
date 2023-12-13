@@ -47,6 +47,7 @@ public class Main {
         }
 
         DotEnv.config();
+        System.setProperty("nashorn.args", "--language=es6");
 
         discord = new Discord(System.getProperty("token"));
     }
