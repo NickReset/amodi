@@ -53,7 +53,7 @@ public class Main {
         discord = new Discord(System.getProperty("token"));
     }
 
-    public void setup() throws IOException, InterruptedException {
+    public void setup() throws IOException {
         // Replace "your_g4f_api_command" with the actual command to call the "g4f api"
         String[] g4fApiCommand = {"g4f", "api"};
 
