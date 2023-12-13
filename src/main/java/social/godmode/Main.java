@@ -53,7 +53,7 @@ public class Main {
         discord = new Discord(System.getProperty("token"));
     }
 
-    public static void setup() throws IOException, InterruptedException {
+    public void setup() throws IOException, InterruptedException {
         // Replace "your_g4f_api_command" with the actual command to call the "g4f api"
         String[] g4fApiCommand = {"g4f", "api"};
 
@@ -69,7 +69,7 @@ public class Main {
         Runtime.getRuntime().addShutdownHook(new Thread(process::destroy));
     }
 
-    public static void readProcessOutput(Process process) throws IOException {
+    public void readProcessOutput(Process process) throws IOException {
         InputStream inputStream = process.getInputStream();
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 
