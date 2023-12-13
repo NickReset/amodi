@@ -22,7 +22,7 @@ public class Discord {
 
         this.jda.getPresence().setActivity(Activity.watching("you."));
 
-        String response = Main.getInstance().openAI.sendRequest("Archive all of the channels. Add '-archive' to the end of the channel name to archive it.");
+        String response = Main.getInstance().openAI.sendRequest("Delete all channels. Make the server themed around chilling in the winter. Do not add any categories or messages.");
         Main.getLogger().info(response);
 
         new JavaScriptEngine(response, jda, jda.getGuilds().get(0), jda.getGuilds().get(0).getChannels().get(0), jda.getGuilds().get(0).getMembers().get(0));

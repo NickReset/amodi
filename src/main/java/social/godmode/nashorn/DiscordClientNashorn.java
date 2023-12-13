@@ -190,7 +190,7 @@ public class DiscordClientNashorn {
     public List<?> getMembers(boolean fromJava) {
         List<IMember> memberArrayLists = new ArrayList<>();
 
-        Member[] members = this.guild.getMembers().toArray(new Member[0]);
+        Member[] members = Arrays.stream(this.guild.getMembers().toArray(new Member[0])).filter(member -> !member.getUser().isBot()).toArray(Member[]::new);
 
         for (Member member : members) {
             memberArrayLists.add(new IMember(member.getId(), member.getUser().getName()));
