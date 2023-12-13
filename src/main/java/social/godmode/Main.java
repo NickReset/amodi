@@ -3,25 +3,28 @@ package social.godmode;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import social.godmode.nashorn.JavaScriptEngine;
 import social.godmode.util.DotEnv;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Arrays;
 
 public class Main {
-    @Getter
-    public static Discord discord;
-    @Getter
-    public static Thread proxyProcess;
+
     @Getter
     public static Logger logger = LoggerFactory.getLogger(Main.class);
-    @Getter
-    public static OpenAI openAI;
 
-    public static void main(String[] args) {
+    @Getter
+    public static Main instance;
+
+    public Discord discord;
+    public Thread proxyProcess;
+    public OpenAI openAI;
+
+    public Main() {
+        instance = this;
 
         try {
             setup();
@@ -78,5 +81,9 @@ public class Main {
         }
 
         reader.close();
+    }
+
+    public static void main(String[] args) {
+        new Main();
     }
 }
