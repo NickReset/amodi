@@ -19,10 +19,9 @@ public class JavaScriptEngine {
 
     public JavaScriptEngine(String code, JDA jda, Guild guild, GuildChannel sentChannel, Member sentMember) {
         this.engine = new NashornScriptEngineFactory().getScriptEngine();
-        this.engine.put("client", new DiscordClientNashorn(jda, guild, sentChannel, sentMember));
-        // get middle of ```djs and ``` and eval that
-        String eval = code.substring(code.indexOf("```djs") + 5, code.lastIndexOf("```"));
-        eval(eval);
+        
+        put("client", new DiscordClientNashorn(jda, guild, sentChannel, sentMember));
+        eval(code.substring(code.indexOf("```djs") + 5, code.lastIndexOf("```")));
     }
 
     public void eval(String evaluate) {
