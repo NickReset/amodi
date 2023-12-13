@@ -8,16 +8,13 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.Channel;
-import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
-import net.dv8tion.jda.api.entities.emoji.Emoji;
-import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
-import org.json.JSONObject;
+import org.openjdk.nashorn.api.scripting.JSObject;
 import social.godmode.Main;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.lang.reflect.Field;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Getter
@@ -27,12 +24,14 @@ public class DiscordClientNashorn {
     private String invalidPrompt;
     private final GuildChannel sentChannel;
     private final Member sentMember;
+    private final JavaScriptEngine engine;
 
-    public DiscordClientNashorn(JDA jda, Guild guild, GuildChannel sentChannel, Member sentMember) {
+    public DiscordClientNashorn(JDA jda, Guild guild, GuildChannel sentChannel, Member sentMember, JavaScriptEngine engine) {
         this.jda = jda;
         this.guild = guild;
         this.sentChannel = sentChannel;
         this.sentMember = sentMember;
+        this.engine = engine;
     }
 
     public void createChannel(String name, String type) {
@@ -45,7 +44,7 @@ public class DiscordClientNashorn {
     }
 
     public void deleteChannel(String nameOrId) {
-        IChannel Ichannel = getChannel(nameOrId);
+        IChannel Ichannel = (IChannel) getChannel(nameOrId, true);
         GuildChannel channel = this.guild.getGuildChannelById(Ichannel.id);
         if (channel == null) {
             sendInvalidPrompt("Channel does not exist.");
@@ -89,14 +88,17 @@ public class DiscordClientNashorn {
         this.guild.unban(user).queue();
     }
 
-    public List<IMember> getBannedMembers() {
+    public List<?> getBannedMembers(boolean fromJava) {
         Guild.Ban[] bans = this.guild.retrieveBanList().complete().toArray(new Guild.Ban[0]);
         List<IMember> bannedMembers = new ArrayList<>();
         for (Guild.Ban ban : bans) {
             bannedMembers.add(new IMember(ban.getUser().getId(), ban.getUser().getName()));
         }
 
-        return bannedMembers;
+        if (fromJava)
+            return bannedMembers;
+        else
+            return bannedMembers.stream().map(member -> member.toJSObject(this.engine)).toList();
     }
 
     public void messageMember(String id, String message) {
@@ -114,26 +116,44 @@ public class DiscordClientNashorn {
         Main.getLogger().info(str);
     }
 
-    public IMember getMemberWhoExecutedCommand() {
-        return new IMember(this.sentMember.getId(), this.sentMember.getUser().getName());
+    public Object getMemberWhoExecutedCommand(boolean fromJava) {
+        IMember member = new IMember(this.sentMember.getId(), this.sentMember.getUser().getName());
+        if (fromJava)
+            return member;
+        else
+            return member.toJSObject(this.engine);
     }
 
-    public IChannel getChannelWhereCommandWasExecuted() {
-        return new IChannel(this.sentChannel.getId(), this.sentChannel.getName(), this.sentChannel.getType().toString().toLowerCase());
+    public Object getChannelWhereCommandWasExecuted(boolean fromJava) {
+        IChannel channel = new IChannel(this.sentChannel.getId(), this.sentChannel.getName(), this.sentChannel.getType().toString().toLowerCase());
+        if (fromJava)
+            return channel;
+        else
+            return channel.toJSObject(this.engine);
     }
 
-    public IMessage getMessage(String messageID) {
-        Message message = this.guild.getTextChannelById(this.sentChannel.getId()).retrieveMessageById(messageID).complete();
+    public Object getMessage(String channelId, String messageID, boolean fromJava) {
+        TextChannel channel = this.jda.getTextChannelById(channelId);
+        if (channel == null) {
+            sendInvalidPrompt("Channel does not exist.");
+            return null;
+        }
+
+        Message message = channel.retrieveMessageById(messageID).complete();
 
         if(message == null) {
             sendInvalidPrompt("Message does not exist.");
             return null;
         }
 
-        return new IMessage(message.getId(), message.getContentRaw(), message.getAuthor().getId(), message.getChannel().getId());
+        IMessage iMessage = new IMessage(message.getId(), message.getContentRaw(), message.getAuthor().getId(), message.getChannel().getId());
+        if (fromJava)
+            return iMessage;
+        else
+            return iMessage.toJSObject(this.engine);
     }
 
-    public IMessage[] getMessages(String channelID, int limit) {
+    public List<?> getMessages(String channelID, int limit, boolean fromJava) {
         List<IMessage> messages = new ArrayList<>();
 
         // check if channel exists
@@ -149,7 +169,11 @@ public class DiscordClientNashorn {
             messages.add(new IMessage(message.getId(), message.getContentRaw(), message.getAuthor().getId(), message.getChannel().getId()));
         }
 
-        return messages.toArray(new IMessage[0]);
+        List<IMessage> messageList = List.of(messages.toArray(new IMessage[0]));
+        if (fromJava)
+            return messageList;
+        else
+            return messageList.stream().map(iMessage -> iMessage.toJSObject(this.engine)).toList();
     }
 
     public void sendMessageInChannel(String channelID, String message) {
@@ -163,7 +187,7 @@ public class DiscordClientNashorn {
         channel.sendMessage(message).queue();
     }
 
-    public List<IMember> getMembers() {
+    public List<?> getMembers(boolean fromJava) {
         List<IMember> memberArrayLists = new ArrayList<>();
 
         Member[] members = this.guild.getMembers().toArray(new Member[0]);
@@ -172,10 +196,13 @@ public class DiscordClientNashorn {
             memberArrayLists.add(new IMember(member.getId(), member.getUser().getName()));
         }
 
-        return memberArrayLists;
+        if (fromJava)
+            return memberArrayLists;
+        else
+            return memberArrayLists.stream().map(iMember -> iMember.toJSObject(this.engine)).toList();
     }
 
-    public IMember getMember(String id) {
+    public Object getMember(String id, boolean fromJava) {
         Member member = this.guild.getMemberById(id);
 
         if(member == null) {
@@ -183,22 +210,35 @@ public class DiscordClientNashorn {
             return null;
         }
 
-        return new IMember(member.getId(), member.getUser().getName());
+        IMember iMember = new IMember(member.getId(), member.getUser().getName());
+        if (fromJava)
+            return iMember;
+        else
+            return iMember.toJSObject(this.engine);
     }
 
-    public IChannel getChannel(String nameOrId) {
+    @SuppressWarnings("unchecked")
+    public Object getChannel(String nameOrId, boolean fromJava) {
 //        try name first
-        IChannel channel = getChannels().stream().filter(c -> c.name.equals(nameOrId)).findFirst().orElse(null);
+        List<IChannel> channels = (List<IChannel>) getChannels(true);
+
+        IChannel channel = channels.stream().filter(c -> c.name.equals(nameOrId)).findFirst().orElse(null);
+
 
         if(channel == null) {
-            channel = getChannels().stream().filter(c -> c.id.equals(nameOrId)).findFirst().orElse(null);
+            channel = channels.stream().filter(c -> c.id.equals(nameOrId)).findFirst().orElse(null);
         }
-
-        sendInvalidPrompt("Channel " + nameOrId + " does not exist.");
-        return channel;
+        if (channel == null) {
+            sendInvalidPrompt("Channel " + nameOrId + " does not exist.");
+            return null;
+        }
+        if (fromJava)
+            return channel;
+        else
+            return channel.toJSObject(this.engine);
     }
 
-    public List<IChannel> getChannels() {
+    public List<?> getChannels(boolean fromJava) {
         List<IChannel> channelArrayLists = new ArrayList<>();
 
         Channel[] channels = this.guild.getChannels().toArray(new Channel[0]);
@@ -206,27 +246,43 @@ public class DiscordClientNashorn {
         for (Channel channel : channels) {
             channelArrayLists.add(new IChannel(channel.getId(), channel.getName(), channel.getType().toString().toLowerCase()));
         }
-
-        return channelArrayLists;
+        if (fromJava)
+            return channelArrayLists;
+        else
+            return channelArrayLists.stream().map(c -> c.toJSObject(this.engine)).toList();
     }
 
 }
 
+class IBase {
+    public JSObject toJSObject(JavaScriptEngine engine) {
+        Field[] fields = this.getClass().getFields();
+        JSObject object = (JSObject) engine.eval("new Object()");
+        for (Field field : fields) {
+            try {
+                object.setMember(field.getName(), field.get(this));
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        return object;
+    }
+}
 @AllArgsConstructor
-class IChannel {
+class IChannel extends IBase {
     public String id;
     public String name;
     public String type;
 }
 
 @AllArgsConstructor
-class IMember {
+class IMember extends IBase {
     public String id;
     public String name;
 }
 
 @AllArgsConstructor
-class IMessage {
+class IMessage extends IBase {
     public String id;
     public String content;
     public String authorID;

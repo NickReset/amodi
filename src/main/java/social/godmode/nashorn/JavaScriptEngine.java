@@ -6,11 +6,11 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
+import org.openjdk.nashorn.api.scripting.JSObject;
 import org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
-import java.lang.reflect.Method;
 
 @Getter
 public class JavaScriptEngine {
@@ -20,16 +20,17 @@ public class JavaScriptEngine {
     public JavaScriptEngine(String code, JDA jda, Guild guild, GuildChannel sentChannel, Member sentMember) {
         this.engine = new NashornScriptEngineFactory().getScriptEngine();
         
-        put("client", new DiscordClientNashorn(jda, guild, sentChannel, sentMember));
+        put("client", new DiscordClientNashorn(jda, guild, sentChannel, sentMember, this));
         eval(code.substring(code.indexOf("```djs") + 6, code.lastIndexOf("```")));
     }
 
-    public void eval(String evaluate) {
+    public Object eval(String evaluate) {
         try {
-            engine.eval(evaluate);
+            return engine.eval(evaluate);
         } catch (ScriptException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     public void put(String key, Object value) {
