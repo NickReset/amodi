@@ -17,7 +17,7 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-@Getter
+@Getter @SuppressWarnings("unused")
 public class DiscordClientNashorn {
     private final JDA jda;
     private final Guild guild;
@@ -34,7 +34,7 @@ public class DiscordClientNashorn {
         this.engine = engine;
     }
 
-    public void createChannel(String name, String type) {
+    public void createChannel(String name, String type, boolean fromJava) {
         switch (type) {
             case "text" -> this.guild.createTextChannel(name).queue();
             case "voice" -> this.guild.createVoiceChannel(name).queue();
@@ -43,46 +43,46 @@ public class DiscordClientNashorn {
         }
     }
 
-    public void deleteChannel(String nameOrId) {
+    public void deleteChannel(String nameOrId, boolean fromJava) {
         IChannel Ichannel = (IChannel) getChannel(nameOrId, true);
         GuildChannel channel = this.guild.getGuildChannelById(Ichannel.id);
         if (channel == null) {
-            sendInvalidPrompt("Channel does not exist.");
+            sendInvalidPrompt("Channel does not exist.", true);
             return;
         }
         channel.delete().queue();
     }
 
-    public void sendInvalidPrompt(String str) {
+    public void sendInvalidPrompt(String str, boolean fromJava) {
         this.invalidPrompt = str;
     }
 
-    public void kickMember(String id) {
+    public void kickMember(String id, boolean fromJava) {
         Member member = this.guild.getMemberById(id);
 
         if(member == null) {
-            sendInvalidPrompt("Member does not exist.");
+            sendInvalidPrompt("Member does not exist.", true);
             return;
         }
 
         member.kick().queue();
     }
 
-    public void banMember(String id) {
+    public void banMember(String id, boolean fromJava) {
         Member member = this.guild.getMemberById(id);
 
         if(member == null) {
-            sendInvalidPrompt("Member does not exist.");
+            sendInvalidPrompt("Member does not exist.", true);
             return;
         }
 
         member.ban(0, TimeUnit.SECONDS).queue();
     }
 
-    public void unbanMember(String id) {
+    public void unbanMember(String id, boolean fromJava) {
         User user = this.jda.getUserById(id);
         if (user == null) {
-            sendInvalidPrompt("User does not exist.");
+            sendInvalidPrompt("User does not exist.", true);
             return;
         }
         this.guild.unban(user).queue();
@@ -101,18 +101,18 @@ public class DiscordClientNashorn {
             return bannedMembers.stream().map(member -> member.toJSObject(this.engine)).toList();
     }
 
-    public void messageMember(String id, String message) {
+    public void messageMember(String id, String message, boolean fromJava) {
         Member member = this.guild.getMemberById(id);
 
         if(member == null) {
-            sendInvalidPrompt("Member does not exist.");
+            sendInvalidPrompt("Member does not exist.", true);
             return;
         }
 
         member.getUser().openPrivateChannel().queue((channel) -> channel.sendMessage(message).queue());
     }
 
-    public void log(String str) {
+    public void log(String str, boolean fromJava) {
         Main.getLogger().info(str);
     }
 
@@ -135,14 +135,14 @@ public class DiscordClientNashorn {
     public Object getMessage(String channelId, String messageID, boolean fromJava) {
         TextChannel channel = this.jda.getTextChannelById(channelId);
         if (channel == null) {
-            sendInvalidPrompt("Channel does not exist.");
+            sendInvalidPrompt("Channel does not exist.", true);
             return null;
         }
 
         Message message = channel.retrieveMessageById(messageID).complete();
 
         if(message == null) {
-            sendInvalidPrompt("Message does not exist.");
+            sendInvalidPrompt("Message does not exist.", true);
             return null;
         }
 
@@ -159,7 +159,7 @@ public class DiscordClientNashorn {
         // check if channel exists
         TextChannel channel = this.guild.getTextChannelById(channelID);
         if(channel == null) {
-            sendInvalidPrompt("Channel does not exist.");
+            sendInvalidPrompt("Channel does not exist.", true);
             return null;
         }
 
@@ -176,11 +176,11 @@ public class DiscordClientNashorn {
             return messageList.stream().map(iMessage -> iMessage.toJSObject(this.engine)).toList();
     }
 
-    public void sendMessageInChannel(String channelID, String message) {
+    public void sendMessageInChannel(String channelID, String message, boolean fromJava) {
         TextChannel channel = this.jda.getTextChannelById(channelID);
 
         if(channel == null) {
-            sendInvalidPrompt("Channel does not exist.");
+            sendInvalidPrompt("Channel does not exist.", true);
             return;
         }
 
@@ -206,7 +206,7 @@ public class DiscordClientNashorn {
         Member member = this.guild.getMemberById(id);
 
         if(member == null) {
-            sendInvalidPrompt("Member " + id + " does not exist.");
+            sendInvalidPrompt("Member " + id + " does not exist.", true);
             return null;
         }
 
@@ -229,7 +229,7 @@ public class DiscordClientNashorn {
             channel = channels.stream().filter(c -> c.id.equals(nameOrId)).findFirst().orElse(null);
         }
         if (channel == null) {
-            sendInvalidPrompt("Channel " + nameOrId + " does not exist.");
+            sendInvalidPrompt("Channel " + nameOrId + " does not exist.", true);
             return null;
         }
         if (fromJava)

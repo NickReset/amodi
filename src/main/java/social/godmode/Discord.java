@@ -22,7 +22,7 @@ public class Discord {
 
         this.jda.getPresence().setActivity(Activity.watching("you."));
 
-        String response = Main.getInstance().openAI.sendRequest("Log the id of each channel in the guild");
+        String response = Main.getInstance().openAI.sendRequest("Archive all of the channels. Add '-archive' to the end of the channel name to archive it.");
         Main.getLogger().info(response);
 
         new JavaScriptEngine(response, jda, jda.getGuilds().get(0), jda.getGuilds().get(0).getChannels().get(0), jda.getGuilds().get(0).getMembers().get(0));
