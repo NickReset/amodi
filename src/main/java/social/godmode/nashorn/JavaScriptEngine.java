@@ -2,6 +2,10 @@ package social.godmode.nashorn;
 
 import jdk.dynalink.beans.StaticClass;
 import lombok.Getter;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory;
 
 import javax.script.ScriptEngine;
@@ -13,8 +17,12 @@ public class JavaScriptEngine {
 
     private final ScriptEngine engine;
 
-    public JavaScriptEngine() {
+    public JavaScriptEngine(String code, JDA jda, Guild guild, GuildChannel sentChannel, Member sentMember) {
         this.engine = new NashornScriptEngineFactory().getScriptEngine();
+        this.engine.put("client", new DiscordClientNashorn(jda, guild, sentChannel, sentMember));
+        // get middle of ```djs and ``` and eval that
+        String eval = code.substring(code.indexOf("```djs") + 5, code.lastIndexOf("```"));
+        eval(eval);
     }
 
     public void eval(String evaluate) {
