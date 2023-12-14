@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.jetbrains.annotations.NotNull;
 import social.godmode.commands.ExecuteCommand;
 import social.godmode.commands.PingCommand;
@@ -17,6 +18,8 @@ import social.nickrest.command.EmptySubCommand;
 import social.nickrest.command.SubCommand;
 import social.nickrest.command.data.CommandOption;
 
+import java.util.Collection;
+
 @Getter
 public class Discord {
 
@@ -25,7 +28,11 @@ public class Discord {
     private final CommandManager commandManager;
 
     public Discord(String token) {
-        this.jda = JDABuilder.createDefault(token).build();
+        Collection<GatewayIntent> allIntents = GatewayIntent.getIntents(GatewayIntent.ALL_INTENTS);
+        this.jda = JDABuilder
+                .createDefault(token)
+                .enableIntents(allIntents)
+                .build();
 
         try {
             this.jda.awaitReady();
