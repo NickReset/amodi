@@ -6,16 +6,18 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
-import org.openjdk.nashorn.api.scripting.JSObject;
 import org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory;
 
+import javax.script.Bindings;
+import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
+import java.util.Set;
 
 @Getter
 public class JavaScriptEngine {
 
-    private final ScriptEngine engine;
+    private ScriptEngine engine;
 
     public JavaScriptEngine(String code, JDA jda, Guild guild, GuildChannel sentChannel, Member sentMember) {
         this.engine = new NashornScriptEngineFactory().getScriptEngine();
@@ -34,26 +36,31 @@ public class JavaScriptEngine {
     }
 
     public void put(String key, Object value) {
+        if(engine == null) throw new RuntimeException("JavaScriptEngine has been terminated!");
+
         engine.put(key, value);
     }
 
     public void put(String key, Class<?> clazz) {
-        engine.put(key, StaticClass.forClass(clazz));
+        put(key, StaticClass.forClass(clazz));
     }
 
     public void put(Class<?> clazz) {
-        engine.put(clazz.getSimpleName(), StaticClass.forClass(clazz));
+        put(clazz.getSimpleName(), clazz);
     }
 
     public Object get(String name) {
-        if(engine.get(name) == null)
-//            throw new RuntimeException("No such variable: " + name);
-            throw new RuntimeException(String.format("No such variable: %s", name));
+        if(engine.get(name) == null) throw new RuntimeException(String.format("No such variable: %s", name));
+
         return engine.get(name);
     }
 
-    public static void test(String a) {
-        System.out.println(a);
+    public void terminate() {
+        Bindings bind = engine.getBindings(ScriptContext.ENGINE_SCOPE);
+        Set<String> allAttributes = bind.keySet();
+        for (String attr : allAttributes) {
+            bind.remove(attr);
+        }
     }
 
 }

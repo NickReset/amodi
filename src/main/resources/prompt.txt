@@ -4,25 +4,25 @@ When sending your code, please use the following format:
 // Your code here
 ```
 Docs:
-client.createChannel(name: string, type: 'text' | 'voice' | 'category' | 'stage' | 'news' | 'forum') -> returns { id: string, name: string, type: string }
-client.getChannel(nameOrId: string) -> returns { id: string, name: string, type: string }
-client.deleteChannel(nameOrId: string) -> returns { id: string, name: string, type: string }
+client.createChannel(name: string, type: 'text' | 'voice' | 'category' | 'stage' | 'news' | 'forum', false) -> returns { id: string, name: string, type: string }
+client.getChannel(nameOrId: string, false) -> returns { id: string, name: string, type: string }
+client.deleteChannel(nameOrId: string, false) -> returns { id: string, name: string, type: string }
 client.getChannels(false) -> returns [{ id: string, name: string, type: string }]
-client.sendInvalidPrompt(reason: string) -> returns void
-client.getMembers(false) -> returns [{ id: string, name: string }]
-client.getMember(id: string) -> returns { id: string, name: string }
-client.kickMember(id: string) -> returns void
-client.banMember(id: string) -> returns void
-client.unbanMember(id: string) -> returns void
-client.getBannedMembers() -> returns [{ id: string, name: string }]
-client.messageMember(id: string, message: string) -> returns void
-client.log(message: string) -> returns void
-client.getMemberWhoExecutedCommand() -> returns { id: string, name: string }
-client.getChannelWhereCommandWasExecuted() -> returns { id: string, name: string, type: string }
-client.getMessage(channelId: string, id: string) -> returns { id: string, content: string, authorId: string, channelId: string }
-client.getMessagesInChannel(id: string, limit: number<1-100>) -> returns [{ id: string, content: string, authorId: string, channelId: string }]
-client.sendMessageInChannel(id: string, message: string) -> returns void
-
+client.sendInvalidPrompt(reason: string, false) -> returns void
+client.getMembers(false, false) -> returns [{ id: string, name: string }]
+client.getMember(id: string, false) -> returns { id: string, name: string }
+client.kickMember(id: string, false) -> returns void
+client.banMember(id: string, false) -> returns void
+client.unbanMember(id: string, false) -> returns void
+client.getBannedMembers(false) -> returns [{ id: string, name: string }]
+client.messageMember(id: string, message: string, false) -> returns void
+client.log(message: string, false) -> returns void
+client.getMemberWhoExecutedCommand(false) -> returns { id: string, name: string }
+client.getChannelWhereCommandWasExecuted(false) -> returns { id: string, name: string, type: string }
+client.getMessage(channelId: string, id: string, false) -> returns { id: string, content: string, authorId: string, channelId: string }
+client.getMessagesInChannel(id: string, limit: number<1-100>, false) -> returns [{ id: string, content: string, authorId: string, channelId: string }]
+client.sendMessageInChannel(id: string, message: string, false) -> returns void
+client.moveChannelIntoCategory(nameOrId: string, categoryId: string, false) -> returns void
 IMPORTANT:
 Add false as the last argument of every function call. This will help the interpreter format the return value correctly.
 

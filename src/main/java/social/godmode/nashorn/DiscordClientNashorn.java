@@ -8,8 +8,10 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.Channel;
+import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
+import net.dv8tion.jda.api.requests.restaction.order.ChannelOrderAction;
 import org.openjdk.nashorn.api.scripting.JSObject;
 import social.godmode.Main;
 
@@ -34,13 +36,23 @@ public class DiscordClientNashorn {
         this.engine = engine;
     }
 
-    public void createChannel(String name, String type, boolean fromJava) {
-        switch (type) {
-            case "text" -> this.guild.createTextChannel(name).queue();
-            case "voice" -> this.guild.createVoiceChannel(name).queue();
-            case "category" -> this.guild.createCategory(name).queue();
-            default -> throw new IllegalArgumentException("Invalid channel type: " + type);
+    public Object createChannel(String name, String type, boolean fromJava) {
+        GuildChannel channel = switch (type) {
+            case "text" -> this.guild.createTextChannel(name).complete();
+            case "voice" -> this.guild.createVoiceChannel(name).complete();
+            case "category" -> this.guild.createCategory(name).complete();
+            default -> null;
+        };
+
+        if(channel == null) {
+            sendInvalidPrompt("Invalid channel type.", true);
+            return null;
         }
+
+        IChannel Ichannel = new IChannel(channel.getId(), channel.getName(), channel.getType().toString().toLowerCase());
+
+        if (fromJava) return Ichannel;
+        else return Ichannel.toJSObject(this.engine);
     }
 
     public void deleteChannel(String nameOrId, boolean fromJava) {
@@ -95,10 +107,8 @@ public class DiscordClientNashorn {
             bannedMembers.add(new IMember(ban.getUser().getId(), ban.getUser().getName()));
         }
 
-        if (fromJava)
-            return bannedMembers;
-        else
-            return bannedMembers.stream().map(member -> member.toJSObject(this.engine)).toList();
+        if (fromJava) return bannedMembers;
+        else return bannedMembers.stream().map(member -> member.toJSObject(this.engine)).toList();
     }
 
     public void messageMember(String id, String message, boolean fromJava) {
@@ -118,18 +128,14 @@ public class DiscordClientNashorn {
 
     public Object getMemberWhoExecutedCommand(boolean fromJava) {
         IMember member = new IMember(this.sentMember.getId(), this.sentMember.getUser().getName());
-        if (fromJava)
-            return member;
-        else
-            return member.toJSObject(this.engine);
+        if (fromJava) return member;
+        else return member.toJSObject(this.engine);
     }
 
     public Object getChannelWhereCommandWasExecuted(boolean fromJava) {
         IChannel channel = new IChannel(this.sentChannel.getId(), this.sentChannel.getName(), this.sentChannel.getType().toString().toLowerCase());
-        if (fromJava)
-            return channel;
-        else
-            return channel.toJSObject(this.engine);
+        if (fromJava) return channel;
+        else return channel.toJSObject(this.engine);
     }
 
     public Object getMessage(String channelId, String messageID, boolean fromJava) {
@@ -147,10 +153,8 @@ public class DiscordClientNashorn {
         }
 
         IMessage iMessage = new IMessage(message.getId(), message.getContentRaw(), message.getAuthor().getId(), message.getChannel().getId());
-        if (fromJava)
-            return iMessage;
-        else
-            return iMessage.toJSObject(this.engine);
+        if (fromJava) return iMessage;
+        else return iMessage.toJSObject(this.engine);
     }
 
     public List<?> getMessages(String channelID, int limit, boolean fromJava) {
@@ -170,10 +174,8 @@ public class DiscordClientNashorn {
         }
 
         List<IMessage> messageList = List.of(messages.toArray(new IMessage[0]));
-        if (fromJava)
-            return messageList;
-        else
-            return messageList.stream().map(iMessage -> iMessage.toJSObject(this.engine)).toList();
+        if (fromJava) return messageList;
+        else return messageList.stream().map(iMessage -> iMessage.toJSObject(this.engine)).toList();
     }
 
     public void sendMessageInChannel(String channelID, String message, boolean fromJava) {
@@ -196,10 +198,8 @@ public class DiscordClientNashorn {
             memberArrayLists.add(new IMember(member.getId(), member.getUser().getName()));
         }
 
-        if (fromJava)
-            return memberArrayLists;
-        else
-            return memberArrayLists.stream().map(iMember -> iMember.toJSObject(this.engine)).toList();
+        if (fromJava) return memberArrayLists;
+        else return memberArrayLists.stream().map(iMember -> iMember.toJSObject(this.engine)).toList();
     }
 
     public Object getMember(String id, boolean fromJava) {
@@ -211,10 +211,8 @@ public class DiscordClientNashorn {
         }
 
         IMember iMember = new IMember(member.getId(), member.getUser().getName());
-        if (fromJava)
-            return iMember;
-        else
-            return iMember.toJSObject(this.engine);
+        if (fromJava) return iMember;
+        else return iMember.toJSObject(this.engine);
     }
 
     @SuppressWarnings("unchecked")
@@ -224,7 +222,6 @@ public class DiscordClientNashorn {
 
         IChannel channel = channels.stream().filter(c -> c.name.equals(nameOrId)).findFirst().orElse(null);
 
-
         if(channel == null) {
             channel = channels.stream().filter(c -> c.id.equals(nameOrId)).findFirst().orElse(null);
         }
@@ -232,10 +229,37 @@ public class DiscordClientNashorn {
             sendInvalidPrompt("Channel " + nameOrId + " does not exist.", true);
             return null;
         }
-        if (fromJava)
-            return channel;
-        else
-            return channel.toJSObject(this.engine);
+
+        if (fromJava) return channel;
+        else return channel.toJSObject(this.engine);
+    }
+
+    public void moveChannelIntoCategory(String nameOrId, String categoryID, boolean fromJava) {
+        IChannel channel = (IChannel) getChannel(nameOrId, true);
+        IChannel category = (IChannel) getChannel(categoryID, true);
+
+        if (category == null) {
+            sendInvalidPrompt("Category does not exist.", true);
+            return;
+        }
+
+        TextChannel guildChannel = this.guild.getTextChannelById(channel.id);
+        GuildChannel guildCategory = this.guild.getGuildChannelById(category.id);
+
+        if (!(guildCategory instanceof Category)) {
+            sendInvalidPrompt("Channel is not a category.", true);
+            return;
+        }
+
+        if (guildChannel == null) {
+            sendInvalidPrompt("Channel does not exist.", true);
+            return;
+        }
+
+        guildChannel
+                .getManager()
+                .setParent((Category) guildCategory)
+                .queue();
     }
 
     public List<?> getChannels(boolean fromJava) {
@@ -246,45 +270,43 @@ public class DiscordClientNashorn {
         for (Channel channel : channels) {
             channelArrayLists.add(new IChannel(channel.getId(), channel.getName(), channel.getType().toString().toLowerCase()));
         }
-        if (fromJava)
-            return channelArrayLists;
-        else
-            return channelArrayLists.stream().map(c -> c.toJSObject(this.engine)).toList();
+        if (fromJava) return channelArrayLists;
+        else return channelArrayLists.stream().map(c -> c.toJSObject(this.engine)).toList();
     }
 
-}
-
-class IBase {
-    public JSObject toJSObject(JavaScriptEngine engine) {
-        Field[] fields = this.getClass().getFields();
-        JSObject object = (JSObject) engine.eval("new Object()");
-        for (Field field : fields) {
-            try {
-                object.setMember(field.getName(), field.get(this));
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
+    static class IBase {
+        public JSObject toJSObject(JavaScriptEngine engine) {
+            Field[] fields = this.getClass().getFields();
+            JSObject object = (JSObject) engine.eval("new Object()");
+            for (Field field : fields) {
+                try {
+                    object.setMember(field.getName(), field.get(this));
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
             }
+            return object;
         }
-        return object;
     }
-}
-@AllArgsConstructor
-class IChannel extends IBase {
-    public String id;
-    public String name;
-    public String type;
-}
+    @AllArgsConstructor
+    static class IChannel extends IBase {
+        public String id;
+        public String name;
+        public String type;
+    }
 
-@AllArgsConstructor
-class IMember extends IBase {
-    public String id;
-    public String name;
-}
+    @AllArgsConstructor
+    static class IMember extends IBase {
+        public String id;
+        public String name;
+    }
 
-@AllArgsConstructor
-class IMessage extends IBase {
-    public String id;
-    public String content;
-    public String authorID;
-    public String channelID;
+    @AllArgsConstructor
+    static class IMessage extends IBase {
+        public String id;
+        public String content;
+        public String authorID;
+        public String channelID;
+    }
+
 }

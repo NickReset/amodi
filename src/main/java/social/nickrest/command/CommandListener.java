@@ -36,7 +36,7 @@ public class CommandListener extends ListenerAdapter {
             }
 
             subCommand.handle(arg.getName(), foundCommand, event);
-            found = true;
+            found = !(subCommand instanceof EmptySubCommand);
         }
 
         if(found) return;

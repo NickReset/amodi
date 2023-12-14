@@ -2,6 +2,7 @@ package social.godmode;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import social.godmode.util.FileUtil;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -13,15 +14,10 @@ import java.nio.file.Path;
 import java.util.Objects;
 
 public class OpenAI {
-    private final String endpoint = "http://localhost:1337/v1/";
-    // load prompt.txt from resources
-    private final String prompt = Files.readString(Path.of("src/main/resources/prompt.txt"));
+    private static final String endpoint = "http://localhost:1337/v1/";
+    private static final String prompt = FileUtil.readString(Path.of("src/main/resources/prompt.txt"));
 
-
-    public OpenAI() throws IOException {
-    }
-
-    public String sendRequest(String userInput) {
+    public static String sendRequest(String userInput) {
         try {
             JSONObject body = new JSONObject();
             body.put("model", "gpt-4-32k-0613");

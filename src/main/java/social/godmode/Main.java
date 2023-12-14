@@ -3,7 +3,6 @@ package social.godmode;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import social.godmode.nashorn.JavaScriptEngine;
 import social.godmode.util.DotEnv;
 
 import java.io.BufferedReader;
@@ -11,17 +10,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+@Getter
 public class Main {
 
-    @Getter
-    public static Logger logger = LoggerFactory.getLogger(Main.class);
+    @Getter public static Logger logger = LoggerFactory.getLogger(Main.class);
+    @Getter private static Main instance;
 
-    @Getter
-    public static Main instance;
+    private final Discord discord;
 
-    public Discord discord;
-    public Thread proxyProcess;
-    public OpenAI openAI;
+    private Thread proxyProcess;
 
     public Main() {
         instance = this;
@@ -35,14 +32,6 @@ public class Main {
             }
             logger.error("Failed to setup g4f proxy.");
             error.printStackTrace();
-            System.exit(-1);
-        }
-
-        try {
-            openAI = new OpenAI();
-        } catch (Exception e) {
-            logger.error("Failed to find prompt.txt file.");
-            e.printStackTrace();
             System.exit(-1);
         }
 
