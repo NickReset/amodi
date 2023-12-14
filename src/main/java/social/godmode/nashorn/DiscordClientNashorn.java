@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.requests.restaction.order.ChannelOrderAction;
+import net.dv8tion.jda.api.utils.concurrent.Task;
 import org.openjdk.nashorn.api.scripting.JSObject;
 import social.godmode.Main;
 
@@ -71,7 +72,7 @@ public class DiscordClientNashorn {
     }
 
     public void kickMember(String id, boolean fromJava) {
-        Member member = this.guild.getMemberById(id);
+        Member member = this.guild.retrieveMemberById(id).complete();
 
         if(member == null) {
             sendInvalidPrompt("Member does not exist.", true);
@@ -82,7 +83,7 @@ public class DiscordClientNashorn {
     }
 
     public void banMember(String id, boolean fromJava) {
-        Member member = this.guild.getMemberById(id);
+        Member member = this.guild.retrieveMemberById(id).complete();
 
         if(member == null) {
             sendInvalidPrompt("Member does not exist.", true);
@@ -93,7 +94,7 @@ public class DiscordClientNashorn {
     }
 
     public void unbanMember(String id, boolean fromJava) {
-        User user = this.jda.getUserById(id);
+        User user = this.jda.retrieveUserById(id).complete();
         if (user == null) {
             sendInvalidPrompt("User does not exist.", true);
             return;
@@ -113,7 +114,7 @@ public class DiscordClientNashorn {
     }
 
     public void messageMember(String id, String message, boolean fromJava) {
-        Member member = this.guild.getMemberById(id);
+        Member member = this.guild.retrieveMemberById(id).complete();
 
         if(member == null) {
             sendInvalidPrompt("Member does not exist.", true);
@@ -192,19 +193,15 @@ public class DiscordClientNashorn {
 
     public List<?> getMembers(boolean fromJava) {
         List<IMember> memberArrayLists = new ArrayList<>();
-
-        Member[] members = Arrays.stream(this.guild.getMembers().toArray(new Member[0])).filter(member -> !member.getUser().isBot()).toArray(Member[]::new);
-
-        for (Member member : members) {
-            memberArrayLists.add(new IMember(member.getId(), member.getUser().getName()));
-        }
-
+        this.guild.loadMembers().get()
+                .stream().filter(member -> !member.getUser().isBot())
+                .forEach(member -> memberArrayLists.add(new IMember(member.getId(), member.getUser().getName())));
         if (fromJava) return memberArrayLists;
-        else return memberArrayLists.stream().map(iMember -> iMember.toJSObject(this.engine)).toList();
+        else return memberArrayLists.stream().map(member -> member.toJSObject(this.engine)).toList();
     }
 
     public Object getMember(String id, boolean fromJava) {
-        Member member = this.guild.getMemberById(id);
+        Member member = this.guild.retrieveMemberById(id).complete();
 
         if(member == null) {
             sendInvalidPrompt("Member " + id + " does not exist.", true);
