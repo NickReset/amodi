@@ -66,7 +66,8 @@ public class DiscordClientNashorn {
     }
 
     public void sendInvalidPrompt(String str, boolean fromJava) {
-        this.invalidPrompt = str;
+        this.engine.invalidPrompt = str;
+        this.engine.terminate();
     }
 
     public void kickMember(String id, boolean fromJava) {
@@ -123,7 +124,7 @@ public class DiscordClientNashorn {
     }
 
     public void log(String str, boolean fromJava) {
-        Main.getLogger().info(str);
+        this.engine.logs.add(str);
     }
 
     public Object getMemberWhoExecutedCommand(boolean fromJava) {

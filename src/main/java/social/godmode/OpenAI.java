@@ -20,7 +20,7 @@ public class OpenAI {
     public static String sendRequest(String userInput) {
         try {
             JSONObject body = new JSONObject();
-            body.put("model", "gpt-4-32k-0613");
+            body.put("model", "gpt-3.5-turbo");
             JSONArray messages = new JSONArray();
             JSONObject systemMessage = new JSONObject();
             systemMessage.put("role", "system");

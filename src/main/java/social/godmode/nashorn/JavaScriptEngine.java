@@ -12,17 +12,25 @@ import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Getter
 public class JavaScriptEngine {
 
     private ScriptEngine engine;
+    public String invalidPrompt;
+    public List<String> logs = new ArrayList<>();
 
     public JavaScriptEngine(String code, JDA jda, Guild guild, GuildChannel sentChannel, Member sentMember) {
         this.engine = new NashornScriptEngineFactory().getScriptEngine();
         
         put("client", new DiscordClientNashorn(jda, guild, sentChannel, sentMember, this));
+        DiscordClientNashorn.IMember iMember = new DiscordClientNashorn.IMember(sentMember.getId(), sentMember.getNickname());
+        DiscordClientNashorn.IChannel iChannel = new DiscordClientNashorn.IChannel(sentChannel.getId(), sentChannel.getName(), sentChannel.getType().name().toLowerCase());
+        put("executedMember", iMember.toJSObject(this));
+        put("executedChannel", iChannel.toJSObject(this));
         eval(code.substring(code.indexOf("```djs") + 6, code.lastIndexOf("```")));
     }
 
