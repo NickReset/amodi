@@ -14,6 +14,7 @@ import social.godmode.util.EmbedGenerator;
 import social.nickrest.command.Command;
 import social.nickrest.command.data.CommandInfo;
 
+import javax.script.CompiledScript;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -24,7 +25,7 @@ import java.util.Objects;
 )
 public class ExecuteCommand extends Command {
 
-    private final HashMap<String, String> cache = new HashMap<>();
+    private final HashMap<String, CompiledScript> cache = new HashMap<>();
 
     @Override
     public void handle(@NotNull SlashCommandInteractionEvent event) {
@@ -34,19 +35,14 @@ public class ExecuteCommand extends Command {
             String query = Objects.requireNonNull(event.getOption("query")).getAsString();
             Main.getLogger().info(query);
             long startResponse = System.currentTimeMillis();
-            String response;
-            if (cache.containsKey(query)) {
-                response = cache.get(query);
-            } else {
+            String response = null;
+            if (!cache.containsKey(query)) {
                 response = OpenAI.sendRequest(query);
-                if (response != null) {
-                    cache.put(query, response);
-                }
             }
             long endResponse = System.currentTimeMillis();
             long responseTime = endResponse - startResponse; // in milliseconds
 
-            if(response == null) {
+            if(response == null && !cache.containsKey(query)) {
                 EmbedBuilder errorEmbed = EmbedGenerator.errorEmbed("Failed to get response from OpenAI Proxy.", "Response time: " + responseTime + "ms");
                 event.getHook().editOriginalEmbeds(errorEmbed.build()).queue();
                 return;
@@ -64,7 +60,15 @@ public class ExecuteCommand extends Command {
 
             long executionStart = System.currentTimeMillis(), executionEnd = -1, executionTime = -1;
             try {
-                JavaScriptEngine engine = new JavaScriptEngine(response, jda, guild, channel, member);
+                JavaScriptEngine engine;
+                if (response !== null) {
+                    engine = new JavaScriptEngine(response, jda, guild, channel, member);
+                } else {
+                    engine = new JavaScriptEngine(cache.get(query), jda, guild, channel, member);
+                }
+                if (engine.compiledScript != null) {
+                    cache.put(query, engine.compiledScript);
+                }
                 executionEnd = System.currentTimeMillis();
                 executionTime = executionEnd - executionStart; // in milliseconds
 

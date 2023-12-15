@@ -10,10 +10,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import social.godmode.util.ReflexUtil;
 
-import javax.script.Bindings;
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.ScriptException;
+import javax.script.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -27,8 +24,9 @@ public class JavaScriptEngine {
 
     public String invalidPrompt;
     public List<String> logs = new ArrayList<>();
+    public CompiledScript compiledScript;
 
-    public JavaScriptEngine(String code, JDA jda, Guild guild, GuildChannel sentChannel, Member sentMember) {
+    public JavaScriptEngine(Object code, JDA jda, Guild guild, GuildChannel sentChannel, Member sentMember) {
         this.sandbox = NashornSandboxes.create();
         this.engine = (ScriptEngine) ReflexUtil.getField("scriptEngine", sandbox);
 
@@ -43,7 +41,11 @@ public class JavaScriptEngine {
         put("executedMember", iMember.toJSObject(this));
         put("executedChannel", iChannel.toJSObject(this));
 
-        eval(code.substring(code.indexOf("```djs") + 6, code.lastIndexOf("```")));
+        if (code instanceof String) {
+            eval(compile((String) code));
+        } else {
+            eval((CompiledScript) code);
+        }
     }
 
     public Object eval(String evaluate) {
@@ -54,6 +56,15 @@ public class JavaScriptEngine {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public Object eval(CompiledScript evaluate) {
+        try {
+            sandbox.setExecutor(Executors.newSingleThreadExecutor());
+            return sandbox.eval(evaluate);
+        } catch (ScriptException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void put(String key, Object value) {
@@ -74,6 +85,17 @@ public class JavaScriptEngine {
         if(engine.get(name) == null) throw new RuntimeException(String.format("No such variable: %s", name));
 
         return engine.get(name);
+    }
+
+    public CompiledScript compile(String code) {
+        try {
+            CompiledScript compiled = sandbox.compile(code);
+            this.compiledScript = compiled;
+            return compiled;
+        } catch (ScriptException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public void terminate() {
