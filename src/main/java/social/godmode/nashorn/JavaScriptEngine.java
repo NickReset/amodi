@@ -17,6 +17,7 @@ import javax.script.ScriptException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Executors;
 
 @Getter
 public class JavaScriptEngine {
@@ -46,6 +47,7 @@ public class JavaScriptEngine {
 
     public Object eval(String evaluate) {
         try {
+            sandbox.setExecutor(Executors.newSingleThreadExecutor());
             return sandbox.eval(evaluate);
         } catch (ScriptException e) {
             e.printStackTrace();
