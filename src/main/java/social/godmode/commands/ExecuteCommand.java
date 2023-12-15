@@ -16,6 +16,7 @@ import social.nickrest.command.Command;
 import social.nickrest.command.data.CommandInfo;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Objects;
 
 @CommandInfo(
@@ -25,6 +26,8 @@ import java.util.Objects;
 )
 public class ExecuteCommand extends Command {
 
+    private HashMap<String, String> cache = new HashMap<>();
+
     @Override
     public void handle(@NotNull SlashCommandInteractionEvent event) {
         new Thread(() -> {
@@ -33,7 +36,15 @@ public class ExecuteCommand extends Command {
             String query = Objects.requireNonNull(event.getOption("query")).getAsString();
             Main.getLogger().info(query);
             long startResponse = new Date().getTime();
-            String response = OpenAI.sendRequest(query);
+            String response;
+            if (cache.containsKey(query)) {
+                response = cache.get(query);
+            } else {
+                response = OpenAI.sendRequest(query);
+                if (response != null) {
+                    cache.put(query, response);
+                }
+            }
             long endResponse = new Date().getTime();
             long responseTime = endResponse - startResponse; // in milliseconds
 
