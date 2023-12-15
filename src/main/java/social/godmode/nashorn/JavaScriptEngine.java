@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
+import social.godmode.Main;
 import social.godmode.util.ReflexUtil;
 
 import javax.script.*;
@@ -58,10 +59,10 @@ public class JavaScriptEngine {
         return null;
     }
 
-    public Object eval(CompiledScript evaluate) {
+    public void eval(CompiledScript evaluate) {
         try {
             sandbox.setExecutor(Executors.newSingleThreadExecutor());
-            return sandbox.eval(evaluate);
+            sandbox.eval(evaluate);
         } catch (ScriptException e) {
             throw new RuntimeException(e);
         }
@@ -91,6 +92,7 @@ public class JavaScriptEngine {
         try {
             CompiledScript compiled = sandbox.compile(code);
             this.compiledScript = compiled;
+            Main.getLogger().info("Compiled script: " + compiled.toString());
             return compiled;
         } catch (ScriptException e) {
             e.printStackTrace();

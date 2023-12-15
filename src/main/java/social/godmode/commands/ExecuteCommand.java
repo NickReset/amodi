@@ -92,6 +92,7 @@ public class ExecuteCommand extends Command {
                     event.getHook().editOriginalEmbeds(doneEmbed.build()).queue();
                 }
             } catch (Exception e) {
+                e.printStackTrace();
                 EmbedBuilder doneEmbed = EmbedGenerator.doneEmbed(response, "Response time: " + responseTime + "ms — Execution time: " + executionTime + "ms");
                 EmbedBuilder errorEmbed = EmbedGenerator.errorEmbed(e.getMessage(), "Response time: " + responseTime + "ms");
                 
