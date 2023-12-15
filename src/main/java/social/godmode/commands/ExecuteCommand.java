@@ -9,19 +9,17 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import org.jetbrains.annotations.NotNull;
 import social.godmode.Main;
 import social.godmode.OpenAI;
-import social.godmode.nashorn.DiscordClientNashorn;
 import social.godmode.nashorn.JavaScriptEngine;
 import social.godmode.util.EmbedGenerator;
 import social.nickrest.command.Command;
 import social.nickrest.command.data.CommandInfo;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Objects;
 
 @CommandInfo(
         name = "execute",
-        description = "Executes GPT-4",
+        description = "Executes GPT-3.5",
         guildOnly = true
 )
 public class ExecuteCommand extends Command {
