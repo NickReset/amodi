@@ -61,7 +61,7 @@ public class ExecuteCommand extends Command {
             long executionStart = System.currentTimeMillis(), executionEnd = -1, executionTime = -1;
             try {
                 JavaScriptEngine engine;
-                if (response !== null) {
+                if (response != null) {
                     engine = new JavaScriptEngine(response, jda, guild, channel, member);
                 } else {
                     engine = new JavaScriptEngine(cache.get(query), jda, guild, channel, member);
