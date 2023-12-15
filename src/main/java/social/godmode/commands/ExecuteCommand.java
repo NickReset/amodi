@@ -64,12 +64,12 @@ public class ExecuteCommand extends Command {
             GuildChannel channel = event.getChannel().asTextChannel();
             Member member = event.getMember();
 
-            EmbedBuilder doneEmbed = null;
+            long executionStart = System.currentTimeMillis(), executionEnd = -1, executionTime = -1;
             try {
-                long executionStart = System.currentTimeMillis();
                 JavaScriptEngine engine = new JavaScriptEngine(response, jda, guild, channel, member);
-                long executionEnd = System.currentTimeMillis();
-                long executionTime = executionEnd - executionStart; // in milliseconds
+                executionEnd = System.currentTimeMillis();
+                executionTime = executionEnd - executionStart; // in milliseconds
+
                 if (engine.invalidPrompt != null) {
                     EmbedBuilder errorEmbed = EmbedGenerator.errorEmbed(engine.invalidPrompt, "Response time: " + responseTime + "ms — Execution time: " + executionTime + "ms");
                     event.getHook().editOriginalEmbeds(errorEmbed.build()).queue();
@@ -78,7 +78,7 @@ public class ExecuteCommand extends Command {
 
                 engine.terminate();
 
-                doneEmbed = EmbedGenerator.doneEmbed(response, "Response time: " + responseTime + "ms — Execution time: " + executionTime + "ms");
+                EmbedBuilder doneEmbed = EmbedGenerator.doneEmbed(response, "Response time: " + responseTime + "ms — Execution time: " + executionTime + "ms");
                 if (engine.logs.size() > 0) {
                     StringBuilder logs = new StringBuilder();
                     for (String log : engine.logs) {
@@ -90,9 +90,10 @@ public class ExecuteCommand extends Command {
                     event.getHook().editOriginalEmbeds(doneEmbed.build()).queue();
                 }
             } catch (Exception e) {
+                EmbedBuilder doneEmbed = EmbedGenerator.doneEmbed(response, "Response time: " + responseTime + "ms — Execution time: " + executionTime + "ms");
                 EmbedBuilder errorEmbed = EmbedGenerator.errorEmbed(e.getMessage(), "Response time: " + responseTime + "ms");
                 
-                if(doneEmbed != null) event.getHook().editOriginalEmbeds(doneEmbed.build(), errorEmbed.build()).queue();
+                if(executionTime != -1) event.getHook().editOriginalEmbeds(doneEmbed.build(), errorEmbed.build()).queue();
                 else event.getHook().editOriginalEmbeds(errorEmbed.build()).queue();
             }
         }).start();
