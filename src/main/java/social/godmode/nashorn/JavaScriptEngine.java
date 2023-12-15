@@ -32,7 +32,7 @@ public class JavaScriptEngine {
         this.sandbox = NashornSandboxes.create();
         this.engine = (ScriptEngine) ReflexUtil.getField("scriptEngine", sandbox);
 
-        this.sandbox.setMaxMemory(1024 * 1024);
+        this.sandbox.setMaxMemory(1024 * 1024 * 1024);
         this.sandbox.setMaxCPUTime(10000);
 
         put("client", new DiscordClientNashorn(jda, guild, sentChannel, sentMember, this));
