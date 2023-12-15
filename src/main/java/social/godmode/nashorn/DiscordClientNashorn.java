@@ -191,7 +191,11 @@ public class DiscordClientNashorn {
         channel.sendMessage(message).queue();
     }
 
-    public List<?> getMembers(boolean fromJava) throws InterruptedException {
+    public void getMessagesInChannel(String channelID, int limit, boolean fromJava) {
+        sendInvalidPrompt("This method is not implemented yet.", true);
+    }
+
+    public List<?> getMembers(boolean fromJava) {
         List<IMember> memberArrayLists = new ArrayList<>();
         List<Member> members = this.guild.loadMembers().get();
         for (Member member : members) {

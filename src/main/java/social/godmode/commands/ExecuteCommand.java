@@ -35,7 +35,7 @@ public class ExecuteCommand extends Command {
 
             String query = Objects.requireNonNull(event.getOption("query")).getAsString();
             Main.getLogger().info(query);
-            long startResponse = new Date().getTime();
+            long startResponse = System.currentTimeMillis();
             String response;
             if (cache.containsKey(query)) {
                 response = cache.get(query);
@@ -45,7 +45,7 @@ public class ExecuteCommand extends Command {
                     cache.put(query, response);
                 }
             }
-            long endResponse = new Date().getTime();
+            long endResponse = System.currentTimeMillis();
             long responseTime = endResponse - startResponse; // in milliseconds
 
             if(response == null) {
@@ -64,9 +64,9 @@ public class ExecuteCommand extends Command {
             GuildChannel channel = event.getChannel().asTextChannel();
             Member member = event.getMember();
 
-            long executionStart = new Date().getTime();
+            long executionStart = System.currentTimeMillis();
             JavaScriptEngine engine = new JavaScriptEngine(response, jda, guild, channel, member);
-            long executionEnd = new Date().getTime();
+            long executionEnd = System.currentTimeMillis();
             long executionTime = executionEnd - executionStart; // in milliseconds
             if (engine.invalidPrompt != null) {
                 EmbedBuilder errorEmbed = EmbedGenerator.errorEmbed(engine.invalidPrompt, "Response time: " + responseTime + "ms — Execution time: " + executionTime + "ms");
