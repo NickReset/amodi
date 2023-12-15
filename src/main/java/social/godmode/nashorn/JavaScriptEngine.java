@@ -34,6 +34,7 @@ public class JavaScriptEngine {
 
         this.sandbox.setMaxMemory(1024 * 1024 * 1024);
         this.sandbox.setMaxCPUTime(10000);
+        this.sandbox.disallowAllClasses();
 
         put("client", new DiscordClientNashorn(jda, guild, sentChannel, sentMember, this));
 
