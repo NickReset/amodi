@@ -26,7 +26,7 @@ import java.util.Objects;
 )
 public class ExecuteCommand extends Command {
 
-    private HashMap<String, String> cache = new HashMap<>();
+    private final HashMap<String, String> cache = new HashMap<>();
 
     @Override
     public void handle(@NotNull SlashCommandInteractionEvent event) {
