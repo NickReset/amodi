@@ -64,6 +64,7 @@ public class ExecuteCommand extends Command {
             GuildChannel channel = event.getChannel().asTextChannel();
             Member member = event.getMember();
 
+            EmbedBuilder doneEmbed = null;
             try {
                 long executionStart = System.currentTimeMillis();
                 JavaScriptEngine engine = new JavaScriptEngine(response, jda, guild, channel, member);
@@ -77,7 +78,7 @@ public class ExecuteCommand extends Command {
 
                 engine.terminate();
 
-                EmbedBuilder doneEmbed = EmbedGenerator.doneEmbed(response, "Response time: " + responseTime + "ms — Execution time: " + executionTime + "ms");
+                doneEmbed = EmbedGenerator.doneEmbed(response, "Response time: " + responseTime + "ms — Execution time: " + executionTime + "ms");
                 if (engine.logs.size() > 0) {
                     StringBuilder logs = new StringBuilder();
                     for (String log : engine.logs) {
@@ -90,7 +91,9 @@ public class ExecuteCommand extends Command {
                 }
             } catch (Exception e) {
                 EmbedBuilder errorEmbed = EmbedGenerator.errorEmbed(e.getMessage(), "Response time: " + responseTime + "ms");
-                event.getHook().editOriginalEmbeds(errorEmbed.build()).queue();
+                
+                if(doneEmbed != null) event.getHook().editOriginalEmbeds(doneEmbed.build(), errorEmbed.build()).queue();
+                else event.getHook().editOriginalEmbeds(errorEmbed.build()).queue();
             }
         }).start();
     }
