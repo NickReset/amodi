@@ -43,9 +43,6 @@ public class OpenAI {
                 byte[] input = body.toString().getBytes(StandardCharsets.UTF_8);
                 os.write(input, 0, input.length);
             }
-
-            System.out.println(connection.getResponseCode());
-            System.out.println(connection.getResponseMessage());
             // get the response
             JSONObject response = new JSONObject(new String(connection.getInputStream().readAllBytes(), StandardCharsets.UTF_8));
             // choices.get(0).message.content
@@ -59,7 +56,6 @@ public class OpenAI {
 //            return response.toString();
         } catch (Exception e) {
             Main.getLogger().error("Failed to send request to OpenAI proxy.");
-            e.printStackTrace();
             return null;
         }
     }
