@@ -30,7 +30,11 @@
             <artifactId>nashorn-core</artifactId>
             <version>15.4</version>
         </dependency>
-        <!--        sl4j-->
+        <dependency>
+            <groupId>org.javadelight</groupId>
+            <artifactId>delight-nashorn-sandbox</artifactId>
+            <version>0.4.2</version>
+        </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>

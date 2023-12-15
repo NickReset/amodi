@@ -1,12 +1,14 @@
 package social.godmode.nashorn;
 
+import delight.nashornsandbox.NashornSandbox;
+import delight.nashornsandbox.NashornSandboxes;
 import jdk.dynalink.beans.StaticClass;
 import lombok.Getter;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
-import org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory;
+import social.godmode.util.ReflexUtil;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
@@ -19,24 +21,32 @@ import java.util.Set;
 @Getter
 public class JavaScriptEngine {
 
-    private ScriptEngine engine;
+    private final ScriptEngine engine;
+    private final NashornSandbox sandbox;
+
     public String invalidPrompt;
     public List<String> logs = new ArrayList<>();
 
     public JavaScriptEngine(String code, JDA jda, Guild guild, GuildChannel sentChannel, Member sentMember) {
-        this.engine = new NashornScriptEngineFactory().getScriptEngine();
-        
+        this.sandbox = NashornSandboxes.create();
+        this.engine = (ScriptEngine) ReflexUtil.getField("scriptEngine", sandbox);
+
+        this.sandbox.setMaxMemory(1024 * 1024);
+        this.sandbox.setMaxCPUTime(10000);
+
         put("client", new DiscordClientNashorn(jda, guild, sentChannel, sentMember, this));
+
         DiscordClientNashorn.IMember iMember = new DiscordClientNashorn.IMember(sentMember.getId(), sentMember.getNickname());
         DiscordClientNashorn.IChannel iChannel = new DiscordClientNashorn.IChannel(sentChannel.getId(), sentChannel.getName(), sentChannel.getType().name().toLowerCase());
         put("executedMember", iMember.toJSObject(this));
         put("executedChannel", iChannel.toJSObject(this));
+
         eval(code.substring(code.indexOf("```djs") + 6, code.lastIndexOf("```")));
     }
 
     public Object eval(String evaluate) {
         try {
-            return engine.eval(evaluate);
+            return sandbox.eval(evaluate);
         } catch (ScriptException e) {
             e.printStackTrace();
         }
