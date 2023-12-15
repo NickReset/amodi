@@ -64,28 +64,33 @@ public class ExecuteCommand extends Command {
             GuildChannel channel = event.getChannel().asTextChannel();
             Member member = event.getMember();
 
-            long executionStart = System.currentTimeMillis();
-            JavaScriptEngine engine = new JavaScriptEngine(response, jda, guild, channel, member);
-            long executionEnd = System.currentTimeMillis();
-            long executionTime = executionEnd - executionStart; // in milliseconds
-            if (engine.invalidPrompt != null) {
-                EmbedBuilder errorEmbed = EmbedGenerator.errorEmbed(engine.invalidPrompt, "Response time: " + responseTime + "ms — Execution time: " + executionTime + "ms");
-                event.getHook().editOriginalEmbeds(errorEmbed.build()).queue();
-                return;
-            }
-
-            engine.terminate();
-
-            EmbedBuilder doneEmbed = EmbedGenerator.doneEmbed(response, "Response time: " + responseTime + "ms — Execution time: " + executionTime + "ms");
-            if (engine.logs.size() > 0) {
-                StringBuilder logs = new StringBuilder();
-                for (String log : engine.logs) {
-                    logs.append(log).append("\n");
+            try {
+                long executionStart = System.currentTimeMillis();
+                JavaScriptEngine engine = new JavaScriptEngine(response, jda, guild, channel, member);
+                long executionEnd = System.currentTimeMillis();
+                long executionTime = executionEnd - executionStart; // in milliseconds
+                if (engine.invalidPrompt != null) {
+                    EmbedBuilder errorEmbed = EmbedGenerator.errorEmbed(engine.invalidPrompt, "Response time: " + responseTime + "ms — Execution time: " + executionTime + "ms");
+                    event.getHook().editOriginalEmbeds(errorEmbed.build()).queue();
+                    return;
                 }
-                EmbedBuilder logsEmbed = EmbedGenerator.logsEmbed(logs.toString());
-                event.getHook().editOriginalEmbeds(doneEmbed.build(), logsEmbed.build()).queue();
-            } else {
-                event.getHook().editOriginalEmbeds(doneEmbed.build()).queue();
+
+                engine.terminate();
+
+                EmbedBuilder doneEmbed = EmbedGenerator.doneEmbed(response, "Response time: " + responseTime + "ms — Execution time: " + executionTime + "ms");
+                if (engine.logs.size() > 0) {
+                    StringBuilder logs = new StringBuilder();
+                    for (String log : engine.logs) {
+                        logs.append(log).append("\n");
+                    }
+                    EmbedBuilder logsEmbed = EmbedGenerator.logsEmbed(logs.toString());
+                    event.getHook().editOriginalEmbeds(doneEmbed.build(), logsEmbed.build()).queue();
+                } else {
+                    event.getHook().editOriginalEmbeds(doneEmbed.build()).queue();
+                }
+            } catch (Exception e) {
+                EmbedBuilder errorEmbed = EmbedGenerator.errorEmbed(e.getMessage(), "Response time: " + responseTime + "ms");
+                event.getHook().editOriginalEmbeds(errorEmbed.build()).queue();
             }
         }).start();
     }
