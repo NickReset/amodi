@@ -191,11 +191,20 @@ public class DiscordClientNashorn {
         channel.sendMessage(message).queue();
     }
 
-    public List<?> getMembers(boolean fromJava) {
+    public List<?> getMembers(boolean fromJava) throws InterruptedException {
         List<IMember> memberArrayLists = new ArrayList<>();
-        this.guild.loadMembers().get()
-                .stream().filter(member -> !member.getUser().isBot())
-                .forEach(member -> memberArrayLists.add(new IMember(member.getId(), member.getUser().getName())));
+        long startTime = System.currentTimeMillis();
+        this.guild.loadMembers(member -> {
+            if (member.getUser().isBot()) return;
+            memberArrayLists.add(new IMember(member.getId(), member.getUser().getName()));
+        });
+        while (memberArrayLists.size() != this.guild.getMemberCount() && System.currentTimeMillis() - startTime < 10000) {
+            Thread.sleep(100);
+        }
+        if (memberArrayLists.isEmpty()) {
+            sendInvalidPrompt("Could not load members.", true);
+            return null;
+        }
         if (fromJava) return memberArrayLists;
         else return memberArrayLists.stream().map(member -> member.toJSObject(this.engine)).toList();
     }
