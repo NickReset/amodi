@@ -41,7 +41,38 @@ public class DiscordClientNashorn {
         GuildChannel channel = switch (type) {
             case "text" -> this.guild.createTextChannel(name).complete();
             case "voice" -> this.guild.createVoiceChannel(name).complete();
+            case "stage" -> this.guild.createStageChannel(name).complete();
+            case "news" -> this.guild.createNewsChannel(name).complete();
+            case "forum" -> this.guild.createForumChannel(name).complete();
             case "category" -> this.guild.createCategory(name).complete();
+            default -> null;
+        };
+
+        if(channel == null) {
+            sendInvalidPrompt("Invalid channel type.", true);
+            return null;
+        }
+
+        IChannel Ichannel = new IChannel(channel.getId(), channel.getName(), channel.getType().toString().toLowerCase());
+
+        if (fromJava) return Ichannel;
+        else return Ichannel.toJSObject(this.engine);
+    }
+
+    public Object createChannel(String name, String type, String parentId, boolean fromJava) {
+        Category parent = this.guild.getCategoryById(parentId);
+
+        if (parent == null) {
+            sendInvalidPrompt("Invalid parent id.", true);
+            return null;
+        }
+
+        GuildChannel channel = switch (type) {
+            case "text" -> this.guild.createTextChannel(name, parent).complete();
+            case "voice" -> this.guild.createVoiceChannel(name, parent).complete();
+            case "stage" -> this.guild.createStageChannel(name, parent).complete();
+            case "news" -> this.guild.createNewsChannel(name, parent).complete();
+            case "forum" -> this.guild.createForumChannel(name, parent).complete();
             default -> null;
         };
 
@@ -192,6 +223,7 @@ public class DiscordClientNashorn {
     }
 
     public void getMessagesInChannel(String channelID, int limit, boolean fromJava) {
+        // TODO
         sendInvalidPrompt("This method is not implemented yet.", true);
     }
 
@@ -243,11 +275,17 @@ public class DiscordClientNashorn {
     }
 
     public void moveChannelIntoCategory(String nameOrId, String categoryID, boolean fromJava) {
+        nameOrId = nameOrId.trim().replace("-", "");
         IChannel channel = (IChannel) getChannel(nameOrId, true);
         IChannel category = (IChannel) getChannel(categoryID, true);
 
         if (category == null) {
             sendInvalidPrompt("Category does not exist.", true);
+            return;
+        }
+
+        if (channel == null) {
+            sendInvalidPrompt("Channel does not exist.", true);
             return;
         }
 

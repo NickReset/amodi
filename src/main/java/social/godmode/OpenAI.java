@@ -20,7 +20,7 @@ public class OpenAI {
     public static String sendRequest(String userInput) {
         try {
             JSONObject body = new JSONObject();
-            body.put("model", "gpt-3.5-turbo");
+            body.put("model", "gpt-4-0613");
             JSONArray messages = new JSONArray();
             JSONObject systemMessage = new JSONObject();
             systemMessage.put("role", "system");
@@ -37,6 +37,7 @@ public class OpenAI {
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json; utf-8");
             connection.setRequestProperty("Accept", "application/json");
+            connection.setRequestProperty("Authorization", "Bearer " + System.getProperty("api_key"));
             connection.setDoOutput(true);
 
             try (OutputStream os = connection.getOutputStream()) {

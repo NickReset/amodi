@@ -2,6 +2,7 @@ package social.godmode.nashorn;
 
 import delight.nashornsandbox.NashornSandbox;
 import delight.nashornsandbox.NashornSandboxes;
+import delight.nashornsandbox.SandboxScriptContext;
 import jdk.dynalink.beans.StaticClass;
 import lombok.Getter;
 import net.dv8tion.jda.api.JDA;
@@ -13,8 +14,10 @@ import social.godmode.util.ReflexUtil;
 
 import javax.script.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 
 @Getter
@@ -25,15 +28,20 @@ public class JavaScriptEngine {
 
     public String invalidPrompt;
     public List<String> logs = new ArrayList<>();
-    public CompiledScript compiledScript;
+    public static final ConcurrentHashMap<String, CompiledScript> compiledCache = new ConcurrentHashMap<>();
+    public ScriptContext context;
 
-    public JavaScriptEngine(Object code, JDA jda, Guild guild, GuildChannel sentChannel, Member sentMember) {
+    public JavaScriptEngine(String code, JDA jda, Guild guild, GuildChannel sentChannel, Member sentMember) {
         this.sandbox = NashornSandboxes.create();
         this.engine = (ScriptEngine) ReflexUtil.getField("scriptEngine", sandbox);
 
         this.sandbox.setMaxMemory(1024 * 1024 * 1024);
-        this.sandbox.setMaxCPUTime(10000);
+        this.sandbox.setMaxCPUTime(100000);
         this.sandbox.disallowAllClasses();
+        this.sandbox.setMaxPreparedStatements(9999);
+        this.sandbox.setExecutor(Executors.newSingleThreadExecutor());
+        assert engine != null;
+        context = engine.getContext();
 
         put("client", new DiscordClientNashorn(jda, guild, sentChannel, sentMember, this));
 
@@ -42,11 +50,14 @@ public class JavaScriptEngine {
         put("executedMember", iMember.toJSObject(this));
         put("executedChannel", iChannel.toJSObject(this));
 
-        if (code instanceof String) {
-            eval(compile((String) code));
-        } else {
-            eval((CompiledScript) code);
+        // get code in between ```djs and ```
+        String codeToEval = code.substring(code.indexOf("```djs") + 6, code.lastIndexOf("```"));
+        CompiledScript compiled = compiledCache.get(codeToEval);
+        if (compiled == null) {
+            compiled = compile(codeToEval);
         }
+        eval(compiled);
+//        eval(codeToEval);
     }
 
     public Object eval(String evaluate) {
@@ -61,8 +72,7 @@ public class JavaScriptEngine {
 
     public void eval(CompiledScript evaluate) {
         try {
-            sandbox.setExecutor(Executors.newSingleThreadExecutor());
-            sandbox.eval(evaluate);
+            sandbox.eval(evaluate, context);
         } catch (ScriptException e) {
             throw new RuntimeException(e);
         }
@@ -89,10 +99,10 @@ public class JavaScriptEngine {
     }
 
     public CompiledScript compile(String code) {
+        Main.getLogger().info("Compiling script: " + code);
         try {
             CompiledScript compiled = sandbox.compile(code);
-            this.compiledScript = compiled;
-            Main.getLogger().info("Compiled script: " + compiled.toString());
+            compiledCache.put(code, compiled);
             return compiled;
         } catch (ScriptException e) {
             e.printStackTrace();
