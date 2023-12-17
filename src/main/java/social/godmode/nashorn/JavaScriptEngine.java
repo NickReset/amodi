@@ -23,12 +23,13 @@ import java.util.concurrent.Executors;
 @Getter
 public class JavaScriptEngine {
 
+    public static final ConcurrentHashMap<String, CompiledScript> compiledCache = new ConcurrentHashMap<>();
+
     private final ScriptEngine engine;
     private final NashornSandbox sandbox;
 
     public String invalidPrompt;
     public List<String> logs = new ArrayList<>();
-    public static final ConcurrentHashMap<String, CompiledScript> compiledCache = new ConcurrentHashMap<>();
     public ScriptContext context;
 
     public JavaScriptEngine(String code, JDA jda, Guild guild, GuildChannel sentChannel, Member sentMember) {
@@ -57,7 +58,7 @@ public class JavaScriptEngine {
             compiled = compile(codeToEval);
         }
         eval(compiled);
-//        eval(codeToEval);
+        //        eval(codeToEval);
     }
 
     public Object eval(String evaluate) {

@@ -5,16 +5,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import social.godmode.util.DotEnv;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 
 @Getter
 public class Main {
 
-    @Getter public static Logger logger = LoggerFactory.getLogger(Main.class);
-    @Getter private static Main instance;
+    @Getter
+    public static Logger logger = LoggerFactory.getLogger(Main.class);
+    @Getter
+    private static Main instance;
 
     private final Discord discord;
 

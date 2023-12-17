@@ -15,6 +15,7 @@ import net.dv8tion.jda.api.requests.restaction.order.ChannelOrderAction;
 import net.dv8tion.jda.api.utils.concurrent.Task;
 import org.openjdk.nashorn.api.scripting.JSObject;
 import social.godmode.Main;
+import social.godmode.util.NashornUtil;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -133,7 +134,7 @@ public class DiscordClientNashorn {
         this.guild.unban(user).queue();
     }
 
-    public List<?> getBannedMembers(boolean fromJava) {
+    public Object getBannedMembers(boolean fromJava) {
         Guild.Ban[] bans = this.guild.retrieveBanList().complete().toArray(new Guild.Ban[0]);
         List<IMember> bannedMembers = new ArrayList<>();
         for (Guild.Ban ban : bans) {
@@ -141,7 +142,7 @@ public class DiscordClientNashorn {
         }
 
         if (fromJava) return bannedMembers;
-        else return bannedMembers.stream().map(member -> member.toJSObject(this.engine)).toList();
+        else return NashornUtil.convertListToJSObject(this.engine, bannedMembers.stream().map(member -> member.toJSObject(this.engine)).toList());
     }
 
     public void messageMember(String id, String message, boolean fromJava) {
@@ -190,7 +191,7 @@ public class DiscordClientNashorn {
         else return iMessage.toJSObject(this.engine);
     }
 
-    public List<?> getMessages(String channelID, int limit, boolean fromJava) {
+    public Object getMessages(String channelID, int limit, boolean fromJava) {
         List<IMessage> messages = new ArrayList<>();
 
         // check if channel exists
@@ -208,7 +209,7 @@ public class DiscordClientNashorn {
 
         List<IMessage> messageList = List.of(messages.toArray(new IMessage[0]));
         if (fromJava) return messageList;
-        else return messageList.stream().map(iMessage -> iMessage.toJSObject(this.engine)).toList();
+        else return NashornUtil.convertListToJSObject(this.engine, messageList.stream().map(iMessage -> iMessage.toJSObject(this.engine)).toList());
     }
 
     public void sendMessageInChannel(String channelID, String message, boolean fromJava) {
@@ -227,7 +228,7 @@ public class DiscordClientNashorn {
         sendInvalidPrompt("This method is not implemented yet.", true);
     }
 
-    public List<?> getMembers(boolean fromJava) {
+    public Object getMembers(boolean fromJava) {
         List<IMember> memberArrayLists = new ArrayList<>();
         List<Member> members = this.guild.loadMembers().get();
         for (Member member : members) {
@@ -239,7 +240,7 @@ public class DiscordClientNashorn {
             return null;
         }
         if (fromJava) return memberArrayLists;
-        else return memberArrayLists.stream().map(member -> member.toJSObject(this.engine)).toList();
+        else return NashornUtil.convertListToJSObject(this.engine, memberArrayLists.stream().map(member -> member.toJSObject(this.engine)).toList());
     }
 
     public Object getMember(String id, boolean fromJava) {
@@ -302,13 +303,12 @@ public class DiscordClientNashorn {
             return;
         }
 
-        guildChannel
-                .getManager()
+        guildChannel.getManager()
                 .setParent((Category) guildCategory)
                 .queue();
     }
 
-    public List<?> getChannels(boolean fromJava) {
+    public Object getChannels(boolean fromJava) {
         List<IChannel> channelArrayLists = new ArrayList<>();
 
         Channel[] channels = this.guild.getChannels().toArray(new Channel[0]);
@@ -317,7 +317,7 @@ public class DiscordClientNashorn {
             channelArrayLists.add(new IChannel(channel.getId(), channel.getName(), channel.getType().toString().toLowerCase()));
         }
         if (fromJava) return channelArrayLists;
-        else return channelArrayLists.stream().map(c -> c.toJSObject(this.engine)).toList();
+        else return NashornUtil.convertListToJSObject(this.engine, channelArrayLists.stream().map(c -> c.toJSObject(this.engine)).toList());
     }
 
     static class IBase {
@@ -334,6 +334,7 @@ public class DiscordClientNashorn {
             return object;
         }
     }
+    
     @AllArgsConstructor
     static class IChannel extends IBase {
         public String id;
