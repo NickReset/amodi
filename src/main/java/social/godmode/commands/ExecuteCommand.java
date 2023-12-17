@@ -10,12 +10,11 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import org.jetbrains.annotations.NotNull;
 import social.godmode.Main;
 import social.godmode.OpenAI;
-import social.godmode.nashorn.JavaScriptEngine;
+import social.godmode.script.JavaScriptEngine;
 import social.godmode.util.EmbedGenerator;
 import social.nickrest.command.Command;
 import social.nickrest.command.data.CommandInfo;
 
-import javax.script.CompiledScript;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -72,7 +71,7 @@ public class ExecuteCommand extends Command {
             long executionStart = System.currentTimeMillis(), executionEnd, executionTime = -1;
             try {
                 assert response != null;
-                JavaScriptEngine engine = new JavaScriptEngine(response, jda, guild, channel, member);
+                JavaScriptEngine engine = new   JavaScriptEngine(response, jda, guild, channel, member);
                 executionEnd = System.currentTimeMillis();
                 executionTime = executionEnd - executionStart; // in milliseconds
 

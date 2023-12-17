@@ -1,10 +1,15 @@
 package social.godmode;
 
+import com.oracle.truffle.js.scriptengine.GraalJSEngineFactory;
+import jdk.dynalink.beans.StaticClass;
 import lombok.Getter;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.HostAccess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import social.godmode.util.DotEnv;
 
+import javax.script.ScriptEngine;
 import java.io.*;
 
 @Getter
@@ -35,7 +40,15 @@ public class Main {
         }
 
         DotEnv.config();
-        System.setProperty("nashorn.args", "--language=es6");
+
+        String[] list = new String[]{
+                "polyglot.engine.WarnInterpreterOnly", "false",
+                "polyglot.engine.WarnInterpreterOnly", "false",
+                "polyglot.js.ecmascript-version", "2020",
+        };
+        for(int i = 0; i < list.length; i += 2) {
+            System.setProperty(list[i], list[i + 1]);
+        }
 
         discord = new Discord(System.getProperty("token"));
     }

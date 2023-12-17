@@ -1,4 +1,4 @@
-package social.godmode.nashorn;
+package social.godmode.script;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,11 +11,8 @@ import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
-import net.dv8tion.jda.api.requests.restaction.order.ChannelOrderAction;
-import net.dv8tion.jda.api.utils.concurrent.Task;
-import org.openjdk.nashorn.api.scripting.JSObject;
-import social.godmode.Main;
-import social.godmode.util.NashornUtil;
+import org.jetbrains.annotations.Nullable;
+import social.godmode.util.ScriptUtil;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -49,15 +46,7 @@ public class DiscordClientNashorn {
             default -> null;
         };
 
-        if(channel == null) {
-            sendInvalidPrompt("Invalid channel type.", true);
-            return null;
-        }
-
-        IChannel Ichannel = new IChannel(channel.getId(), channel.getName(), channel.getType().toString().toLowerCase());
-
-        if (fromJava) return Ichannel;
-        else return Ichannel.toJSObject(this.engine);
+        return checkforInvaildCHannelTypeThenReturnObject(fromJava, channel);
     }
 
     public Object createChannel(String name, String type, String parentId, boolean fromJava) {
@@ -77,15 +66,7 @@ public class DiscordClientNashorn {
             default -> null;
         };
 
-        if(channel == null) {
-            sendInvalidPrompt("Invalid channel type.", true);
-            return null;
-        }
-
-        IChannel Ichannel = new IChannel(channel.getId(), channel.getName(), channel.getType().toString().toLowerCase());
-
-        if (fromJava) return Ichannel;
-        else return Ichannel.toJSObject(this.engine);
+        return checkforInvaildCHannelTypeThenReturnObject(fromJava, channel);
     }
 
     public void deleteChannel(String nameOrId, boolean fromJava) {
@@ -141,7 +122,7 @@ public class DiscordClientNashorn {
         }
 
         if (fromJava) return bannedMembers;
-        else return NashornUtil.convertListToJSObject(this.engine, bannedMembers.stream().map(member -> member.toJSObject(this.engine)).toList());
+        else return ScriptUtil.toJSList(this.engine, bannedMembers.stream().map(member -> member.toJSObject(this.engine)).toList());
     }
 
     public void messageMember(String id, String message, boolean fromJava) {
@@ -208,7 +189,7 @@ public class DiscordClientNashorn {
 
         List<IMessage> messageList = List.of(messages.toArray(new IMessage[0]));
         if (fromJava) return messageList;
-        else return NashornUtil.convertListToJSObject(this.engine, messageList.stream().map(iMessage -> iMessage.toJSObject(this.engine)).toList());
+        else return ScriptUtil.toJSList(this.engine, messageList.stream().map(iMessage -> iMessage.toJSObject(this.engine)).toList());
     }
 
     public void sendMessageInChannel(String channelID, String message, boolean fromJava) {
@@ -239,7 +220,7 @@ public class DiscordClientNashorn {
             return null;
         }
         if (fromJava) return memberArrayLists;
-        else return NashornUtil.convertListToJSObject(this.engine, memberArrayLists.stream().map(member -> member.toJSObject(this.engine)).toList());
+        else return ScriptUtil.toJSList(this.engine, memberArrayLists.stream().map(member -> member.toJSObject(this.engine)).toList());
     }
 
     public Object getMember(String id, boolean fromJava) {
@@ -316,24 +297,38 @@ public class DiscordClientNashorn {
             channelArrayLists.add(new IChannel(channel.getId(), channel.getName(), channel.getType().toString().toLowerCase()));
         }
         if (fromJava) return channelArrayLists;
-        else return NashornUtil.convertListToJSObject(this.engine, channelArrayLists.stream().map(c -> c.toJSObject(this.engine)).toList());
+        else return ScriptUtil.toJSList(this.engine, channelArrayLists.stream().map(c -> c.toJSObject(this.engine)).toList());
+    }
+
+    @Nullable
+    private Object checkforInvaildCHannelTypeThenReturnObject(boolean fromJava, GuildChannel channel) {
+        if(channel == null) {
+            sendInvalidPrompt("Invalid channel type.", true);
+            return null;
+        }
+
+        IChannel Ichannel = new IChannel(channel.getId(), channel.getName(), channel.getType().toString().toLowerCase());
+
+        if (fromJava) return Ichannel;
+        else return Ichannel.toJSObject(this.engine);
     }
 
     static class IBase {
-        public JSObject toJSObject(JavaScriptEngine engine) {
+        public Object toJSObject(JavaScriptEngine engine) {
             Field[] fields = this.getClass().getFields();
-            JSObject object = (JSObject) engine.eval("new Object()");
+            Map<String, Object> map = new HashMap<>();
             for (Field field : fields) {
                 try {
-                    object.setMember(field.getName(), field.get(this));
+                    map.put(field.getName(), field.get(this));
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 }
             }
-            return object;
+
+            return engine.getContext().asValue(map);
         }
     }
-    
+
     @AllArgsConstructor
     static class IChannel extends IBase {
         public String id;

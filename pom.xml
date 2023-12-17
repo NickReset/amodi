@@ -26,14 +26,20 @@
             <version>5.0.0-beta.5</version>
         </dependency>
         <dependency>
-            <groupId>org.openjdk.nashorn</groupId>
-            <artifactId>nashorn-core</artifactId>
-            <version>15.4</version>
+            <groupId>org.graalvm.js</groupId>
+            <artifactId>js-scriptengine</artifactId>
+            <version>23.1.1</version>
         </dependency>
         <dependency>
-            <groupId>org.javadelight</groupId>
-            <artifactId>delight-nashorn-sandbox</artifactId>
-            <version>0.4.2</version>
+            <groupId>org.graalvm.polyglot</groupId>
+            <artifactId>polyglot</artifactId>
+            <version>23.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.graalvm.polyglot</groupId>
+            <artifactId>js</artifactId>
+            <version>23.1.0</version>
+            <type>pom</type>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
