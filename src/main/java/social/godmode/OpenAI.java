@@ -4,6 +4,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import social.godmode.util.FileUtil;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -15,7 +16,7 @@ import java.util.Objects;
 
 public class OpenAI {
     private static final String endpoint = "http://localhost:1337/v1/";
-    private static final String prompt = FileUtil.readString(Path.of("src/main/resources/prompt.txt"));
+    private static final String prompt = FileUtil.readInputStream(Main.class.getResourceAsStream("/prompt.txt"));
 
     public static String sendRequest(String userInput) {
         try {

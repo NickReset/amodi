@@ -82,7 +82,6 @@ public class ExecuteCommand extends Command {
                     return;
                 }
 
-                engine.terminate();
                 List<MessageEmbed> embeds = new ArrayList<>();
                 EmbedBuilder doneEmbed = EmbedGenerator.doneEmbed(response, "Response time: " + responseTime + "ms — Execution time: " + executionTime + "ms");
                 embeds.add(doneEmbed.build());

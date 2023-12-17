@@ -111,12 +111,4 @@ public class JavaScriptEngine {
         return null;
     }
 
-    public void terminate() {
-        Bindings bind = engine.getBindings(ScriptContext.ENGINE_SCOPE);
-        Set<String> allAttributes = bind.keySet();
-        for (String attr : allAttributes) {
-            bind.remove(attr);
-        }
-    }
-
 }

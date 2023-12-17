@@ -100,7 +100,6 @@ public class DiscordClientNashorn {
 
     public void sendInvalidPrompt(String str, boolean fromJava) {
         this.engine.invalidPrompt = str;
-        this.engine.terminate();
     }
 
     public void kickMember(String id, boolean fromJava) {
